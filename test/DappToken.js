@@ -37,11 +37,15 @@ contract('DappToken', function(accounts){
 	it('transfers token ownership', function(){
 		return DappToken.deployed().then(function(instance){
 			tokenInstance = instance;
-			// with call we trigger a transaction
+			// with call we trigger a transaction with no cost
+			// it will return the real value of the function
 			return tokenInstance.transfer.call(accounts[1], 100000000);
 		}).then(assert.fail).catch(function(error){
 			assert(error.message.indexOf('revert') >=0, 'Error message must contain revert');
-			// triggers a transaction
+			return tokenInstance.transfer.call(accounts[1], 250, {from: accounts[0]});
+		}).then(function(success){
+			assert.equal(success, true, 'Something went wrong in Transfer function');
+			// triggers a transaction with COST
 			return tokenInstance.transfer(accounts[1], 250, {from: accounts[0]});
 		}).then(function(receipt){
 			assert.equal(receipt.logs.length, 1, 'triggers one event');

@@ -41,7 +41,7 @@ contract DappToken {
 
 		emit Transfer(msg.sender, _to, _value);
 
-
+		return true;
 	}
 
 	 
