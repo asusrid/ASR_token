@@ -30,8 +30,8 @@ contract DappToken {
 
 	// Tranfer function
 	// Exception (not enough tokens)
-	// Return boolean
 	// Transfer event
+	// Return boolean
 	function transfer(address _to, uint256 _value) public returns(bool success){
 
 		require(balanceOf[msg.sender] >= _value);
@@ -40,6 +40,7 @@ contract DappToken {
 		balanceOf[_to] += _value;
 
 		emit Transfer(msg.sender, _to, _value);
+
 
 	}
 
