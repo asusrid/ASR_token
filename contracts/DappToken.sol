@@ -9,7 +9,7 @@ contract DappToken {
 	string public standard = 'ASR Token v1.0';
 	uint256 public totalSupply;
 
-	event Tranfer (
+	event Transfer (
 		address indexed _from,
 		address indexed _to,
 		uint256 _value
@@ -39,7 +39,7 @@ contract DappToken {
 		balanceOf[msg.sender] -= _value;
 		balanceOf[_to] += _value;
 
-
+		emit Transfer(msg.sender, _to, _value);
 
 	}
 
