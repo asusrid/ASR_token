@@ -8,6 +8,13 @@ contract DappToken {
 	string public symbol = 'ASR';
 	string public standard = 'ASR Token v1.0';
 	uint256 public totalSupply;
+
+	event Tranfer (
+		address indexed _from,
+		address indexed _to,
+		uint256 _value
+	);
+
 	mapping (address => uint256) public balanceOf;
 
 
@@ -19,6 +26,24 @@ contract DappToken {
 		// allocate the initial supply
 		balanceOf[msg.sender] = _initialSupply;
 	}
+
+
+	// Tranfer function
+	// Exception (not enough tokens)
+	// Return boolean
+	// Transfer event
+	function transfer(address _to, uint256 _value) public returns(bool success){
+
+		require(balanceOf[msg.sender] >= _value);
+
+		balanceOf[msg.sender] -= _value;
+		balanceOf[_to] += _value;
+
+
+
+	}
+
+	 
 
 
 } 
