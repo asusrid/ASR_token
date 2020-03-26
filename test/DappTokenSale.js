@@ -59,6 +59,26 @@ contract('DappTokenSale', function(accounts){
 		});
 	});
 
+	it('finishes sale process', function(){
+		return DappToken.deployed().then(function(instance){
+			tokenInstance = instance;
+			return DappTokenSale.deployed();
+		}).then(function(instance){
+			tokenSaleInstance = instance;
+			return tokenSaleInstance.endSale({from: buyer});
+		}).then(assert.fail).catch(function(error){
+			assert(error.message.indexOf('revert') >= 0, 'admin is the responsable to finish a sale');
+			return tokenSaleInstance.endSale({from: admin});
+		}).then(function(receipt){
+			return tokenInstance.balanceOf(admin);
+		}).then(function(balance){
+			assert.equal(balance.toNumber(), 999990, 'returns all unsold tokens');
+			return tokenSaleInstance.tokenPrice();	
+		//}).then(function(price){
+		//	assert.equal(price.toNumber(), 0,'token price was reset');
+		});
+	});
+
 
 
 

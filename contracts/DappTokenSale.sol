@@ -5,7 +5,7 @@ import "./DappToken.sol";
 contract DappTokenSale{
 
 	// its gonna be written into the blockchain
-	address admin;
+	address payable admin;
 	DappToken public tokenContract;
 	uint256 public tokenPrice;
 	uint256 public tokenSold;
@@ -32,6 +32,14 @@ contract DappTokenSale{
 		require (tokenContract.transfer(msg.sender, _numberOfTokens));
 		
 		tokenSold += _numberOfTokens;
+
 		emit Sell(msg.sender, _numberOfTokens);
+	}
+
+
+	function endSale() public {
+		require(msg.sender == admin);
+		require(tokenContract.transfer(admin, tokenContract.balanceOf(address(this))));
+		selfdestruct(admin);
 	}
 }
