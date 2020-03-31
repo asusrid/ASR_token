@@ -1,5 +1,5 @@
-const DappToken = artifacts.require("DappToken");
-const DappTokenSale = artifacts.require("DappTokenSale");
+const DappToken = artifacts.require("./DappToken");
+const DappTokenSale = artifacts.require("./DappTokenSale");
 
 
 module.exports = function(deployer) {
