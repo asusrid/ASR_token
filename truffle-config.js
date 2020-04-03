@@ -41,11 +41,19 @@ module.exports = {
     // You should run a client (like ganache-cli, geth or parity) in a separate terminal
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
-    //
+    
+    // GANACHE
     development: {
       host: "127.0.0.1",     // Localhost (default: none)
       port: 7545,            // Standard Ethereum port (default: none)
       network_id: "*",       // Any network (default: none)
+    },
+    // GETH TO USE RINKEBY
+    rinkeby: {
+      host: "127.0.0.1",     // Localhost (default: none)
+      port: 8545,            // Standard Ethereum port (default: none)
+      network_id: "4",       // Any network (default: none)
+      gas: 4700000
     },
 
     // Another network with more advanced options...
