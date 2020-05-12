@@ -12,6 +12,7 @@ contract('DappTokenSale', function(accounts){
 	var tokenAvailable = 750000;
 	var admin = accounts[0];
 	var buyer = accounts[1];
+	var tx = accounts[2];
 	var numTokens;
 
 	it('initializes the contract with the correct values', function(){
@@ -59,7 +60,7 @@ contract('DappTokenSale', function(accounts){
 		});
 	});
 
-	it('finishes sale process', function(){
+	/*it('finishes sale process', function(){
 		return DappToken.deployed().then(function(instance){
 			tokenInstance = instance;
 			return DappTokenSale.deployed();
@@ -77,7 +78,64 @@ contract('DappTokenSale', function(accounts){
 		}).then(function(price){
 			assert.equal(price.toNumber(), 0,'token price was reset');
 		});
+	});*/
+
+
+
+
+	it('transfering between accounts', function(){
+
+		let balanceBeforeTranfer;
+
+		return DappToken.deployed().then(function(instance){
+			tokenInstance = instance;
+			fromAccount = accounts[2];
+			toAccount = accounts[3];
+			spendingAccount = accounts[4];
+			return tokenInstance.transfer(fromAccount, 100, {from: accounts[0]});
+		}).then(function(receipt){
+			//approve
+			return tokenInstance.approve(spendingAccount, 10, {from: fromAccount});
+		}).then(function(receipt){
+			return tokenInstance.transferFrom(fromAccount, toAccount, 10000, {from: spendingAccount});
+		}).then(assert.fail).catch(function(error){
+			assert(error.message.indexOf('revert') >=0, 'Balance must be positive');
+			return tokenInstance.transferFrom(fromAccount, toAccount, 15, {from: spendingAccount});
+		}).then(assert.fail).catch(function(error){
+			assert(error.message.indexOf('revert') >=0, 'Cannot transfer an amount higher than the approved one');
+			return tokenInstance.transferFrom.call(fromAccount, toAccount, 10, {from: spendingAccount});
+		}).then(function(success){
+			assert.equal(success, true, 'ASR transfered!');
+		});	
 	});
+
+
+
+	/*it('transfering between accounts', function(){
+
+		let balanceBeforeTranfer;
+
+		return DappToken.deployed().then(function(instance){
+			tokenInstance = instance;
+			return DappTokenSale.deployed();
+		}).then(function(instance){
+			tokenSaleInstance = instance;
+			return tokenInstance.balanceOf(admin);
+		}).then(function(balance){
+			balanceBeforeTranfer = balance.toNumber();
+			console.log("Balance: ", balanceBeforeTranfer);
+			return tokenSaleInstance.transferFromBank(buyer, 25, {from:admin,value:25*tokenPrice});
+		}).then(function(receipt){
+			assert.equal(receipt.logs.length, 1, 'triggers one event');
+			assert.equal(receipt.logs[0].event, 'TransferTo', 'Incorrect event');
+			assert.equal(receipt.logs[0].args._to, buyer, 'Incorrect buyer account');
+			assert.equal(receipt.logs[0].args._amount, 25, 'Incorrect number of tokens');
+			return tokenInstance.balanceOf(admin);
+		}).then(function(balance){
+			console.log("Balance 2: ", balance.toNumber());
+			assert(balanceBeforeTranfer, balance.toNumber(), 'transferFromBank not done correctly');
+		});
+	});*/
 
 
 
