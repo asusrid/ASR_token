@@ -105,6 +105,8 @@ App = {
 			if(err == null){
 				App.account = account;
 				$("#accountAddress").html(account);
+
+				
 				
 				App.contracts.Balance.deployed().then(function(instance){
 					balanceInstance = instance;
