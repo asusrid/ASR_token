@@ -896,12 +896,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x25dAD2ECf7f7A3021f863D5014e082204a3060C0",
-      "transactionHash": "0xe1ea290195a227f7b703ca76d4727efbd0ab6905562802f9c0eb4c75456e38a6"
+      "address": "0xcf343c8E21fB183F1559241d79D6268fCbDa8eAD",
+      "transactionHash": "0xa7cb304a5b50a205dbb6f8216918154a734701d35200217baa4840751b8a409d"
     }
   },
   "schemaVersion": "3.0.23",
-  "updatedAt": "2020-05-12T18:57:14.691Z",
+  "updatedAt": "2020-05-14T23:10:33.934Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

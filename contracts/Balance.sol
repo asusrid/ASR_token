@@ -30,6 +30,10 @@ contract Balance {
         return claims[msg.sender][_index];
     }
 
+    function getClaimsLength() public view returns (uint) {
+        return claims[msg.sender].length;
+    }
+
     function addChild(address _childAddress) public {
     	numChild ++;
     	children[numChild] = _childAddress; 

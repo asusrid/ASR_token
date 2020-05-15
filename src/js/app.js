@@ -49,6 +49,9 @@ App = {
 			$.getJSON("Balance.json", function(balance){
 				App.contracts.Balance = TruffleContract(balance);
 				App.contracts.Balance.setProvider(App.web3Provider);
+				App.contracts.Balance.deployed().then(function(instance){
+					console.log("Balance", instance.address);
+				});
 				App.listenForEvents();	
 				return App.render();
 			});		
@@ -62,7 +65,7 @@ App = {
 				fromBlock: 'latest',
 			}).watch(function(err, event){
 				if(!err){
-					console.log("event sell triggered", event);
+					console.log("Event sell triggered!!", event);
 					//alert("Purchase made!")
 					App.render();
 				}
@@ -75,7 +78,7 @@ App = {
 				fromBlock: 'latest',
 			}).watch(function(err, event){
 				if(!err){
-					console.log("event claim triggered", event);
+					console.log("Event claim triggered!!", event);
 					App.render();
 				}
 			});
@@ -88,12 +91,11 @@ App = {
 		if (App.loading){
 			return;
 		}
-		App.loading = true;
+		App.loading = true;		
 
 
-		let loader = $("#loader");
-		let content = $("#content");
-		
+		loader = $("#loader");
+		content = $("#content");
 
 		loader.show();
 		content.hide();
@@ -103,22 +105,22 @@ App = {
 			if(err == null){
 				App.account = account;
 				$("#accountAddress").html(account);
-
+				
 				App.contracts.Balance.deployed().then(function(instance){
 					balanceInstance = instance;
 					return balanceInstance.numChild();
 				}).then(function(numChild){
+
 					let numUser = 0;
 					let found = false;
 					for(var i = 1; i <= numChild; i++){
 						balanceInstance.children(i).then(function(address){
 							numUser ++;
-
 							if(account == address) { 
 
 								found = true;
+
 								// ************ CHILD 1 AND 2 *************
-								
 								$('#content-user' + numUser).css('border', '2px solid lightblue');
 								let dappBalance = $('.dapp-balance'+ numUser);
 
@@ -135,99 +137,12 @@ App = {
 							} else if(!found && numUser == numChild){
 
 								// **************  ADMIN  *************
-
 								$('#content-user' + 0).css('border', '2px solid lightblue');
 
-								App.contracts.DappTokenSale.deployed().then(function(instance){
-									dappTokenSaleInstance = instance;
-									return dappTokenSaleInstance.tokenPrice();
-								}).then(function(tokenPrice){
-									App.tokenPrice = tokenPrice;
-									$('.token-price').html(web3.fromWei(App.tokenPrice, "ether").toNumber());
-									return dappTokenSaleInstance.tokenSold();
-								}).then(function(tokenSold){
-									App.tokenSold = tokenSold.toNumber();
-									$('.tokens-sold').html(App.tokenSold);
-									$('.tokens-available').html(App.tokensAvailable);
-									
-									let progressPercent = (App.tokenSold / App.tokensAvailable) * 100;
-									$('#progress').css('width', progressPercent + '%');
-								
-
-									// Load token contract
-									App.contracts.DappToken.deployed().then(function(instance) {
-										dappTokenInstance = instance;
-										return dappTokenInstance.balanceOf(App.account);
-									}).then(function(balance) {
-										$('.dapp-balance'+0).html(balance.toNumber());
-										App.loading = false;
-										loader.hide();
-										content.show();
-									})
-								});
-
-								App.contracts.Balance.deployed().then(function(instance){
-									balanceInstance = instance;
-									claimsResult = $("#resultClaims");
-						      		claimsResult.empty();
-									return balanceInstance.numClaims();
-								}).then(function(numClaims){
-									console.log("NumClaims: " + numClaims);
-									if(numClaims != 0) {
-										for(var i = 0; i < numClaims; i++){
-											// NO FUNCIONA A PARTIR DE AQUI
-											balanceInstance.getClaim(i).then(function(amount){
-												var claimTemplate = "<tr><td><span class='idChildClaim'></span>New</td><td><span id='childClaim'></span>" + amount + "</td></tr>";
-						      					claimsResult.append(claimTemplate);
-											});
-										}
-									} else { 
-										var claimTemplate = "<tr><td><span id='idChildClaim'></span>No Claims Yet</td><td><span id='childClaim'></span> - </td></tr>";
-										claimsResult.append(claimTemplate);
-									}
-								});
-
-
-								App.contracts.Balance.deployed().then(function(instance){
-									balanceInstance = instance;
-									return balanceInstance.numChild();
-								}).then(function(numChild){
-									var candidatesSelect = $("#childrenSelect");
-						      		candidatesSelect.empty();
-						      		let numUser = 0;
-									for(var i = 1; i <= numChild; i++){
-										balanceInstance.children(i).then(function(address){
-											numUser ++;
-											var candidateOption = "<option value='" + address + "'> Child " + numUser + "</option>";
-						          			candidatesSelect.append(candidateOption);
-										});
-									}
-								});
-
-
-								App.contracts.Balance.deployed().then(function(instance){
-									balanceInstance = instance;
-									return balanceInstance.numChild();
-								}).then(function(numChild){
-									balanceResult = $("#resultBalance");
-						      		balanceResult.empty();
-						      		let numUser = 0;
-									for(var i = 1; i <= numChild; i++){
-										balanceInstance.children(i).then(function(address){
-											address = address;
-											App.contracts.DappToken.deployed().then(function(instance){
-												dappTokenInstance = instance;
-												return dappTokenInstance.balanceOf(address)
-											}).then(function(balance){
-												numUser ++;
-												balanceTemplate = "<tr><td><span id='idChildBalance'> Child "+ numUser +"</span></td><td><span id='childBalance'></span>" + balance + "</td></tr>";
-						  						balanceResult.append(balanceTemplate);
-											});
-										});
-									}
-								});
-
-
+								App.giveMyAccountAndProgressBar();
+								App.giveBalances();
+								App.giveTransferOperation();
+								App.giveClaims();
 							}
 						});
 					}
@@ -238,50 +153,36 @@ App = {
 		});
 		
 
-		
-
-
-		
-
-
-		
-		
-		
-		
-
-		
-
-
 
 	},
 
 	buyTokens: function() {
-		$('#content').hide();
-		$('#loader').show();
+		content.hide();
+		loader.show();
 		let  numberOfToken = $('#numberOfTokenBuy').val();
 		App.contracts.DappTokenSale.deployed().then(function(instance){
 			return instance.buyTokens(numberOfToken, {
 				from: App.account,
 				value: numberOfToken * App.tokenPrice,
-				gas: 600000
+				gas: 500000
 			});
 		}).then(function(result){
 			console.log('Tokens boughts...');
 			$('form').trigger('reset');
-			$('#loader').hide();
-			$('#content').show();
+			loader.hide();
+			content.show();
 		});
 	},
 
-	transferFrom: function() {
-		$('#content').hide();
-		$('#loader').show();
+	transferTo: function() {
+		content.hide();
+		loader.show();
 
 		let numberOfToken = $('#numberOfTokenTransfer').val();
 		let toAccount = $("#childrenSelect").val();
-		let spendingAccount;
 		let tokenInstance;
 
+		// ESTE CODIGO Y EL DE MAS ABAJO SE REPITEN
 		App.contracts.DappToken.deployed().then(function(instance){
 			tokenInstance = instance;
 			return tokenInstance.transfer(toAccount, numberOfToken, {
@@ -291,19 +192,40 @@ App = {
 		}).then(function(result){
 			console.log('Transfer done...');
 			$('form').trigger('reset');
-			$('#loader').hide();
-			$('#content').show();
+			loader.hide();
+			content.show();
+		})
+	},
+
+	transferClaim: function() {
+		content.hide();
+		loader.show();
+
+		let numberOfToken = $('#numberTokensClaim').val();
+		let toAccount = $("#childAddressClaim").val();
+		let tokenInstance;
+
+		App.contracts.DappToken.deployed().then(function(instance){
+			tokenInstance = instance;
+			return tokenInstance.transfer(toAccount, numberOfToken, {
+				from: App.account,
+				gas: 500000
+			});
+		}).then(function(result){
+			console.log('Transfer Claim done...');
+			//$('form').trigger('reset');
+			loader.hide();
+			content.show();
 		})
 	},
 
 	addClaim: function() {
-		$('#content').hide();
-		$('#loader').show();
+		content.hide();
+		loader.show();
 
 		let numberOfToken = $('#numberOfTokenClaim').val();
 		App.contracts.Balance.deployed().then(function(instance){
 			balanceInstance = instance;
-			console.log("Number tokens: " + numberOfToken);
 			return balanceInstance.addClaim(numberOfToken, {
 				from: App.account,
 				gas: 500000
@@ -311,12 +233,137 @@ App = {
 		}).then(function(result){
 			console.log('Claim requested...');
 			$('form').trigger('reset');
-			$('#loader').hide();
-			$('#content').show();
+			loader.hide();
+			content.show();
 		})
 	},
 
-	getAccounts: function(callback) {
+	giveMyAccountAndProgressBar: function() {
+
+		App.contracts.DappTokenSale.deployed().then(function(instance){
+			dappTokenSaleInstance = instance;
+			return dappTokenSaleInstance.tokenPrice();
+		}).then(function(tokenPrice){
+			App.tokenPrice = tokenPrice;
+			$('.token-price').html(web3.fromWei(App.tokenPrice, "ether").toNumber());
+			return dappTokenSaleInstance.tokenSold();
+		}).then(function(tokenSold){
+			App.tokenSold = tokenSold.toNumber();
+			$('.tokens-sold').html(App.tokenSold);
+			$('.tokens-available').html(App.tokensAvailable);
+			
+			let progressPercent = (App.tokenSold / App.tokensAvailable) * 100;
+			$('#progress').css('width', progressPercent + '%');
+		
+			// Load token contract
+			App.contracts.DappToken.deployed().then(function(instance) {
+				dappTokenInstance = instance;
+				return dappTokenInstance.balanceOf(App.account);
+			}).then(function(balance) {
+				$('.dapp-balance'+0).html(balance.toNumber());
+				App.loading = false;
+				loader.hide();
+				content.show();
+			})
+		});
+	},
+
+	giveBalances: function() {
+
+		App.contracts.Balance.deployed().then(function(instance){
+			balanceInstance = instance;
+			return balanceInstance.numChild();
+		}).then(function(numChild){
+			let balanceResult = $("#resultBalance");
+      		balanceResult.empty();
+      		let numUser = 0;
+			for(var i = 1; i <= numChild; i++){
+				balanceInstance.children(i).then(function(address){
+					address = address;
+					App.contracts.DappToken.deployed().then(function(instance){
+						dappTokenInstance = instance;
+						return dappTokenInstance.balanceOf(address)
+					}).then(function(balance){
+						numUser ++;
+						let balanceTemplate = "<tr>"+
+												"<td> Child "+ numUser +"</td>"+
+												"<td>" + balance + "</td>"+
+											"</tr>";
+  						balanceResult.append(balanceTemplate);
+					});
+				});
+			}
+		});
+	},
+
+	giveTransferOperation: function() {
+
+		App.contracts.Balance.deployed().then(function(instance){
+			balanceInstance = instance;
+			return balanceInstance.numChild();
+		}).then(function(numChild){
+			let candidatesSelect = $("#childrenSelect");
+      		candidatesSelect.empty();
+      		let numUser = 0;
+			for(var i = 1; i <= numChild; i++){
+				balanceInstance.children(i).then(function(address){
+					numUser ++;
+					let candidateOption = "<option value='" + address + "'> Child " + numUser + "</option>";
+          			candidatesSelect.append(candidateOption);
+				});
+			}
+		});
+	},
+
+	giveClaims: function() {
+		App.contracts.Balance.deployed().then(function(instance){
+			balanceInstance = instance;
+			return balanceInstance.numChild();
+		}).then(function(numChild){
+			//console.log("NumClaims: " + numClaims);
+			let numUser = 0;
+			for(var i = 1; i <= numChild; i++){
+				numUser ++;
+
+				balanceInstance.children(i).then(function(address){
+					var address = address;
+					App.contracts.Balance.deployed().then(function(instance){
+						balanceInstance = instance;
+						return balanceInstance.getClaimsLength({from:address});
+					}).then(function(numClaims){
+						if(numClaims != 0) {
+							let claimsResult = $("#resultClaims");
+	  						claimsResult.empty();
+	  						var numClaim = 0;
+							for(var i = 0; i < numClaims; i++){
+								balanceInstance.getClaim(i, {from:address}).then(function(amount){
+									console.log("NumClaim: " + numClaim++);
+									var claimTemplate = 
+									"<tr>"+
+										"<td> Child "+ numUser +"<input type='hidden' id='childAddressClaim' value='" + address + "'/></td>"+
+										"<td>" + amount + "<input type='hidden' id='numberTokensClaim' value='" + amount + "'/></td>"+
+										"<td class='text-center'>" +
+											"<form onSubmit='App.transferClaim(); return false;' role='form' style='display: inline-block;'>" + 
+												"<button type='submit' class='btn btn-primary btn-sm'>Send</button>" +
+											"</form>" +
+											"<form onSubmit='App.addClaim(); return false;' role='form' style='display: inline-block; margin-left: 10%;'>" + 
+												"<button type='submit' class='btn btn-primary btn-sm'>Reject</button>" +
+											"</form>" +
+										"</td>" +
+									"</tr>";
+			      					claimsResult.append(claimTemplate);
+								});
+							}
+						}
+					});
+				});
+			}
+		});
+	}
+
+
+
+	/*getAccounts: function(callback) {
 	    web3.eth.getAccounts((error,result) => {
 	        if (error) {
 	            console.log(error);
@@ -325,7 +372,7 @@ App = {
 	            //callback(result);
 	        }
     	});
-	},
+	},*/
 
 }
 
