@@ -33,13 +33,13 @@
 						User 1
 					</h3>
 					<hr>
-					<p>Balance: <span class="dapp-balance1"></span> <span style="font-style: oblique;">ASRs</span> ASR</p>
+					<p>Balance: <span class="dapp-balance1"></span> <span style="font-style: oblique;">-</span> ASR</p>
 
 					<!-- ********** FORM TO SELL TOKENS BETWEEN ACCOUNTS **************** -->
-					<form onSubmit="App.addClaim(); return false;" role="form">
+					<form onSubmit="App.addClaim(1); return false;" role="form">
 						<div class="form-group">
 							<div class="input-group">
-								<input id="numberOfTokenClaim" class="form-control input-lg" type="number" min="1" pattern="[0-9]">
+								<input id="numberOfTokenClaim1" class="form-control input-lg" type="number" min="1" pattern="[0-9]">
 								</input>
 								<span class="input-group-btn">
 									<button type="submit" class="btn btn-primary btn-md">Add Claim</button>
@@ -65,7 +65,7 @@
 					<table class="table">
 						<tbody>
 							<tr>
-								<td>Adress</td>
+								<td>Address</td>
 								<td><span id="accountAddress" class="text-center"></span></td>
 							</tr>
 							<tr>
@@ -162,7 +162,19 @@
 						User 2
 					</h3>
 					<hr>
-					<p>Balance: <span class="dapp-balance2"></span> <span style="font-style: oblique;">ASRs</span> ASR</p>								
+					<p>Balance: <span class="dapp-balance2"></span> <span style="font-style: oblique;">-</span> ASR</p>	
+					<!-- ********** FORM TO SELL TOKENS BETWEEN ACCOUNTS **************** -->
+					<form onSubmit="App.addClaim(2); return false;" role="form">
+						<div class="form-group">
+							<div class="input-group">
+								<input id="numberOfTokenClaim2" class="form-control input-lg" type="number" min="1" pattern="[0-9]">
+								</input>
+								<span class="input-group-btn">
+									<button type="submit" class="btn btn-primary btn-md">Add Claim</button>
+								</span>
+							</div>
+						</div>
+					</form>
 				</div>
 			</div>	
 		</div>

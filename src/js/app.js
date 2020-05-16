@@ -74,7 +74,7 @@ App = {
 		});
 
 		App.contracts.Balance.deployed().then(function(instance){
-			instance.Claim({}, {
+			instance.eventClaim({}, {
 				fromBlock: 'latest',
 			}).watch(function(err, event){
 				if(!err){
@@ -105,14 +105,13 @@ App = {
 			if(err == null){
 				App.account = account;
 				$("#accountAddress").html(account);
+				console.log("Account: " + account);
 
-				
 				
 				App.contracts.Balance.deployed().then(function(instance){
 					balanceInstance = instance;
 					return balanceInstance.numChild();
 				}).then(function(numChild){
-
 					let numUser = 0;
 					let found = false;
 					for(var i = 1; i <= numChild; i++){
@@ -154,9 +153,8 @@ App = {
 			}
 		});
 		
-
-
 	},
+
 
 	buyTokens: function() {
 		content.hide();
@@ -199,33 +197,11 @@ App = {
 		})
 	},
 
-	transferClaim: function() {
+	addClaim: function(idUser) {
 		content.hide();
 		loader.show();
 
-		let numberOfToken = $('#numberTokensClaim').val();
-		let toAccount = $("#childAddressClaim").val();
-		let tokenInstance;
-
-		App.contracts.DappToken.deployed().then(function(instance){
-			tokenInstance = instance;
-			return tokenInstance.transfer(toAccount, numberOfToken, {
-				from: App.account,
-				gas: 500000
-			});
-		}).then(function(result){
-			console.log('Transfer Claim done...');
-			//$('form').trigger('reset');
-			loader.hide();
-			content.show();
-		})
-	},
-
-	addClaim: function() {
-		content.hide();
-		loader.show();
-
-		let numberOfToken = $('#numberOfTokenClaim').val();
+		let numberOfToken = $('#numberOfTokenClaim'+idUser).val();
 		App.contracts.Balance.deployed().then(function(instance){
 			balanceInstance = instance;
 			return balanceInstance.addClaim(numberOfToken, {
@@ -239,6 +215,46 @@ App = {
 			content.show();
 		})
 	},
+
+	transferClaim: function(idClaim, amount) {
+		content.hide();
+		loader.show();
+
+		let numberOfToken = amount;
+		let toAccount = $("#childAddressClaim").val();
+		let tokenInstance;
+
+		App.contracts.DappToken.deployed().then(function(instance){
+			tokenInstance = instance;
+			return tokenInstance.transfer(toAccount, numberOfToken, {
+				from: App.account,
+				gas: 500000
+			});
+		}).then(function(result){
+			console.log('Transfer claim done...');
+			if(result){
+				App.rejectClaim(idClaim);
+			}
+		})
+	},
+
+	rejectClaim: function(idClaim) {
+		content.hide();
+		loader.show();
+
+		App.contracts.Balance.deployed().then(function(instance){
+			balanceInstance = instance;
+			return balanceInstance.deleteClaim(idClaim);
+		}).then(function(result){
+			console.log('Claim rejected...');
+			if(result){
+				loader.hide();
+				content.show();
+			}
+		})
+	},
+
+	
 
 	giveMyAccountAndProgressBar: function() {
 
@@ -318,50 +334,39 @@ App = {
 	},
 
 	giveClaims: function() {
+
 		App.contracts.Balance.deployed().then(function(instance){
 			balanceInstance = instance;
-			return balanceInstance.numChild();
-		}).then(function(numChild){
-			//console.log("NumClaims: " + numClaims);
-			let numUser = 0;
-			for(var i = 1; i <= numChild; i++){
-				numUser ++;
-
-				balanceInstance.children(i).then(function(address){
-					var address = address;
-					App.contracts.Balance.deployed().then(function(instance){
-						balanceInstance = instance;
-						return balanceInstance.getClaimsLength({from:address});
-					}).then(function(numClaims){
-						if(numClaims != 0) {
-							let claimsResult = $("#resultClaims");
-	  						claimsResult.empty();
-	  						var numClaim = 0;
-							for(var i = 0; i < numClaims; i++){
-								balanceInstance.getClaim(i, {from:address}).then(function(amount){
-									console.log("NumClaim: " + numClaim++);
-									var claimTemplate = 
-									"<tr>"+
-										"<td> Child "+ numUser +"<input type='hidden' id='childAddressClaim' value='" + address + "'/></td>"+
-										"<td>" + amount + "<input type='hidden' id='numberTokensClaim' value='" + amount + "'/></td>"+
-										"<td class='text-center'>" +
-											"<form onSubmit='App.transferClaim(); return false;' role='form' style='display: inline-block;'>" + 
-												"<button type='submit' class='btn btn-primary btn-sm'>Send</button>" +
-											"</form>" +
-											"<form onSubmit='App.addClaim(); return false;' role='form' style='display: inline-block; margin-left: 10%;'>" + 
-												"<button type='submit' class='btn btn-primary btn-sm'>Reject</button>" +
-											"</form>" +
-										"</td>" +
-									"</tr>";
-			      					claimsResult.append(claimTemplate);
-								});
-							}
-						}
-					});
-				});
+			return balanceInstance.numClaims();
+		}).then(function(numberOfClaims){
+			numClaims = numberOfClaims;
+			return balanceInstance.listClaims();
+		}).then(function(claims){
+			if(numClaims != 0) {
+				let claimsResult = $("#resultClaims");
+				claimsResult.empty();
+				for(var i = 0; i < numClaims; i++){
+					var claimTemplate = 
+					"<tr>"+
+						"<td>"+ claims[0][i] +"<input type='hidden' id='childAddressClaim' value='" + claims[5][i] + "'/></td>"+
+						"<td>"+ claims[1][i] + "/" + claims[2][i] + "/" + claims[3][i] + "</td>"+
+						"<td>" + claims[4][i] + "</td>"+
+						"<td class='text-center'>" +
+							"<form onSubmit='App.transferClaim("+claims[0][i]+","+claims[4][i]+"); return false;' role='form' style='display: inline-block;'>" + 
+								"<button type='submit' class='btn btn-primary btn-sm'>Send</button>" +
+							"</form>" +
+							"<form onSubmit='App.rejectClaim("+claims[0][i]+"); return false;' role='form' style='display: inline-block; margin-left: 10%;'>" + 
+								"<button type='submit' class='btn btn-primary btn-sm'>Reject</button>" +
+							"</form>" +
+						"</td>" +
+					"</tr>";
+  					claimsResult.append(claimTemplate);
+				}
 			}
 		});
-	}
+	},
+
+	
 
 
 

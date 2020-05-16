@@ -49,31 +49,50 @@ contract Balance {
 		emit eventClaim(numClaims);
 
 		return true;
-		/*numClaims ++;
-		claims[msg.sender].push(_tokenClaim);
-		emit Claim(numClaims);*/
 	}
 
-	function listClaims() public view returns (uint[] memory returnIndexes, uint[] memory returnDays, uint[] memory returnMonths, uint[] memory returnYears, uint[] memory returnAmounts) {
+	function listClaims() public view returns (uint[] memory returnIndexes, uint[] memory returnDays, uint[] memory returnMonths, uint[] memory returnYears, uint[] memory returnAmounts, address[] memory returnAddresses) {
 		
 		uint[] memory claimIndexes = new uint[](numClaims);
 		uint[] memory claimDays = new uint[](numClaims);
 		uint[] memory claimMonths = new uint[](numClaims);
 		uint[] memory claimYears = new uint[](numClaims); 
-		uint[] memory claimAmounts = new uint[](numClaims); 
+		uint[] memory claimAmounts = new uint[](numClaims);
+		address[] memory claimAddresses = new address[](numClaims); 
+
+		uint j = 0;
+		uint k = 0;
 
 		for(uint i = 0; i < numClaims; i++){
-			claimIndexes[i] = childClaims[claims[i]][i].index;
-			claimDays[i] = childClaims[claims[i]][i].day;
-			claimMonths[i] = childClaims[claims[i]][i].month;
-			claimYears[i] = childClaims[claims[i]][i].year;
-			claimAmounts[i] = childClaims[claims[i]][i].amount;
+
+			address currentAddress = claims[i];
+
+			if(currentAddress == children[0]){
+				claimIndexes[i] = childClaims[currentAddress][j].index;
+				claimDays[i] = childClaims[currentAddress][j].day;
+				claimMonths[i] = childClaims[currentAddress][j].month;
+				claimYears[i] = childClaims[currentAddress][j].year;
+				claimAmounts[i] = childClaims[currentAddress][j].amount;
+				claimAddresses[i] = currentAddress;
+
+				j++;
+				
+			} else {
+				claimIndexes[i] = childClaims[currentAddress][k].index;
+				claimDays[i] = childClaims[currentAddress][k].day;
+				claimMonths[i] = childClaims[currentAddress][k].month;
+				claimYears[i] = childClaims[currentAddress][k].year;
+				claimAmounts[i] = childClaims[currentAddress][k].amount;
+				claimAddresses[i] = currentAddress;
+
+				k++;
+			}
 		}
 
-		return(claimIndexes, claimDays, claimMonths, claimYears, claimAmounts);
+		return(claimIndexes, claimDays, claimMonths, claimYears, claimAmounts, claimAddresses);
 	}
 
-	function deleteClaim(uint _numClaim) public {
+	function deleteClaim(uint _numClaim) public returns(bool){
 
 		address childAddress = claims[_numClaim];
 
@@ -102,19 +121,13 @@ contract Balance {
 		}
 
 		numClaims --;
+
+		return true;
 	}
 
-	/*function getClaim(uint _index) public view returns (uint) {
-        return claims[msg.sender][_index];
-    }
-
-    function getClaimsLength() public view returns (uint) {
-        return claims[msg.sender].length;
-    }*/
-
     function addChild(address _childAddress) public {
-    	numChild ++;
     	children[numChild] = _childAddress; 
+    	numChild ++;
     }
 
 }
