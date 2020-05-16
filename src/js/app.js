@@ -114,7 +114,7 @@ App = {
 				}).then(function(numChild){
 					let numUser = 0;
 					let found = false;
-					for(var i = 1; i <= numChild; i++){
+					for(var i = 0; i < numChild; i++){
 						balanceInstance.children(i).then(function(address){
 							numUser ++;
 							if(account == address) { 
@@ -122,8 +122,10 @@ App = {
 								found = true;
 
 								// ************ CHILD 1 AND 2 *************
+								console.log(numUser)
 								$('#content-user' + numUser).css('border', '2px solid lightblue');
 								let dappBalance = $('.dapp-balance'+ numUser);
+								dappBalance.empty();
 
 								App.contracts.DappToken.deployed().then(function(instance) {
 									dappTokenInstance = instance;
@@ -138,7 +140,7 @@ App = {
 							} else if(!found && numUser == numChild){
 
 								// **************  ADMIN  *************
-								$('#content-user' + 0).css('border', '2px solid lightblue');
+								$('#content-user0').css('border', '2px solid lightblue');
 
 								App.giveMyAccountAndProgressBar();
 								App.giveBalances();
@@ -295,7 +297,7 @@ App = {
 			let balanceResult = $("#resultBalance");
       		balanceResult.empty();
       		let numUser = 0;
-			for(var i = 1; i <= numChild; i++){
+			for(var i = 0; i < numChild; i++){
 				balanceInstance.children(i).then(function(address){
 					address = address;
 					App.contracts.DappToken.deployed().then(function(instance){
@@ -323,7 +325,7 @@ App = {
 			let candidatesSelect = $("#childrenSelect");
       		candidatesSelect.empty();
       		let numUser = 0;
-			for(var i = 1; i <= numChild; i++){
+			for(var i = 0; i < numChild; i++){
 				balanceInstance.children(i).then(function(address){
 					numUser ++;
 					let candidateOption = "<option value='" + address + "'> Child " + numUser + "</option>";

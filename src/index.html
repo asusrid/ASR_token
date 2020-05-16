@@ -33,7 +33,7 @@
 						User 1
 					</h3>
 					<hr>
-					<p>Balance: <span class="dapp-balance1"></span> <span style="font-style: oblique;">-</span> ASR</p>
+					<p>Balance: <span class="dapp-balance1">-</span> ASR</p>
 
 					<!-- ********** FORM TO SELL TOKENS BETWEEN ACCOUNTS **************** -->
 					<form onSubmit="App.addClaim(1); return false;" role="form">
@@ -94,6 +94,14 @@
 
 					<h5>Claims</h5>
 					<table class="table text-center">
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">Date</th>
+								<th scope="col">Amount</th>
+								<th scope="col">Operations</th>
+							</tr>
+						</thead>
 						<tbody id="resultClaims">
 							<tr>
 								<td>-</td>
@@ -162,7 +170,7 @@
 						User 2
 					</h3>
 					<hr>
-					<p>Balance: <span class="dapp-balance2"></span> <span style="font-style: oblique;">-</span> ASR</p>	
+					<p>Balance: <span class="dapp-balance2">-</span> ASR</p>	
 					<!-- ********** FORM TO SELL TOKENS BETWEEN ACCOUNTS **************** -->
 					<form onSubmit="App.addClaim(2); return false;" role="form">
 						<div class="form-group">
