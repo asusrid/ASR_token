@@ -50,7 +50,7 @@ App = {
 				App.contracts.Balance = TruffleContract(balance);
 				App.contracts.Balance.setProvider(App.web3Provider);
 				App.contracts.Balance.deployed().then(function(instance){
-					console.log("Balance", instance.address);
+					console.log("Balance Contract", instance.address);
 				});
 				App.listenForEvents();	
 				return App.render();
@@ -306,7 +306,7 @@ App = {
 					}).then(function(balance){
 						numUser ++;
 						let balanceTemplate = "<tr>"+
-												"<td> Child "+ numUser +"</td>"+
+												"<td> User "+ numUser +"</td>"+
 												"<td>" + balance + "</td>"+
 											"</tr>";
   						balanceResult.append(balanceTemplate);
@@ -328,7 +328,7 @@ App = {
 			for(var i = 0; i < numChild; i++){
 				balanceInstance.children(i).then(function(address){
 					numUser ++;
-					let candidateOption = "<option value='" + address + "'> Child " + numUser + "</option>";
+					let candidateOption = "<option value='" + address + "'> User " + numUser + "</option>";
           			candidatesSelect.append(candidateOption);
 				});
 			}
