@@ -55,19 +55,31 @@ App = {
 				App.listenForEvents();	
 				return App.render();
 			});		
-		})
+		});
 	},
 
 
 	listenForEvents: function() {
+
+		/*App.contracts.DappToken.deployed().then(function(instance){
+			instance.Transfer({}, {
+				fromBlock: 'latest',
+			}).watch(function(err, event){
+				if(!err){
+					console.log("Event sell triggered!!", event);
+					App.giveBalances();
+				}
+			});
+
+		});*/
+
 		App.contracts.DappTokenSale.deployed().then(function(instance){
 			instance.Sell({}, {
 				fromBlock: 'latest',
 			}).watch(function(err, event){
 				if(!err){
 					console.log("Event sell triggered!!", event);
-					//alert("Purchase made!")
-					App.render();
+					App.giveMyAccountAndProgressBar();
 				}
 			});
 
@@ -79,7 +91,7 @@ App = {
 			}).watch(function(err, event){
 				if(!err){
 					console.log("Event claim triggered!!", event);
-					App.render();
+					App.giveClaims();
 				}
 			});
 		});
